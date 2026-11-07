@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Certmgr — сертификаты Let's Encrypt</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">SR</span>
+      <div>
+        <strong>Certmgr</strong>
+        <span class="sub">Let's Encrypt · DNS-01 · ручные TXT</span>
+      </div>
+    </div>
+    <div class="cron" id="cron-status">Cron: проверяем…</div>
+  </header>
+
+  <main>
+    <section class="card form-card">
+      <div class="card-head">
+        <h1>Новый сертификат</h1>
+        <p class="muted">Сертификат выпускается для домена и, при желании, для <code>*.домен</code>.</p>
+      </div>
+      <form id="issue-form" autocomplete="off">
+        <div class="grid">
+          <label class="field">
+            <span>Домен</span>
+            <input name="domain" required placeholder="example.com" spellcheck="false" autocapitalize="none">
+          </label>
+          <label class="field">
+            <span>Email для Let's Encrypt</span>
+            <input name="email" type="email" value="{{ default_email }}" placeholder="admin@example.com" spellcheck="false" autocapitalize="none">
+          </label>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="wildcard"> Добавить wildcard <code>*.домен</code></label>
+          <label class="check"><input type="checkbox" name="staging"> Staging (тестовый сервер)</label>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="submit">Создать запрос</button>
+          <span class="hint">После этого появятся TXT-записи для DNS.</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card smtp-card">
+      <div class="card-head">
+        <h2>SMTP и уведомления</h2>
+        <p class="muted">Письма уходят на email из формы выпуска. Адрес ниже — необязательный получатель-переопределение.</p>
+      </div>
+      <form id="smtp-form" autocomplete="off">
+        <div class="grid">
+          <label class="field">
+            <span>SMTP-сервер</span>
+            <input name="host" placeholder="smtp.mail.ru" spellcheck="false" autocapitalize="none">
+          </label>
+          <label class="field">
+            <span>Порт</span>
+            <input name="port" type="number" min="1" max="65535" placeholder="465">
+          </label>
+          <label class="field">
+            <span>Логин</span>
+            <input name="username" placeholder="user@mail.ru" spellcheck="false" autocapitalize="none">
+          </label>
+          <label class="field">
+            <span>Пароль</span>
+            <input name="password" type="password" placeholder="не менять" autocomplete="new-password">
+          </label>
+          <label class="field">
+            <span>Отправитель</span>
+            <input name="sender" placeholder="user@mail.ru" spellcheck="false" autocapitalize="none">
+          </label>
+          <label class="field">
+            <span>Получатель уведомлений (необязательно)</span>
+            <input name="notify_to" placeholder="по умолчанию — email из формы" spellcheck="false" autocapitalize="none">
+          </label>
+          <label class="field">
+            <span>Публичный URL интерфейса</span>
+            <input name="public_url" placeholder="http://server:8090" spellcheck="false" autocapitalize="none">
+          </label>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="enabled"> Уведомления включены</label>
+          <label class="check"><input type="checkbox" name="use_ssl"> SSL (обычно порт 465)</label>
+          <span class="chip" id="smtp-password-state">Пароль не задан</span>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="submit">Сохранить SMTP</button>
+          <input class="test-input" name="test_to" placeholder="Email для теста" spellcheck="false" autocapitalize="none">
+          <button class="btn ghost" type="button" id="smtp-test">Отправить тест</button>
+        </div>
+        <p class="hint">Пароль хранится в <code>./data/smtp.json</code> с правами 0600 и не возвращается в интерфейс.</p>
+      </form>
+    </section>
+
+    <section class="section-title">
+      <h2>Сертификаты</h2>
+      <p class="muted" id="renew-note"></p>
+    </section>
+
+    <section id="certs" class="certs" aria-live="polite">
+      <div class="empty">Загрузка…</div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

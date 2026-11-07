@@ -1,0 +1,36 @@
+name: certmgr
+
+services:
+  certmgr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: certmgr
+    container_name: certmgr
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      CERTMGR_USER: ${CERTMGR_USER:-admin}
+      CERTMGR_PASSWORD: ${CERTMGR_PASSWORD:-}
+      RENEW_DAYS: ${RENEW_DAYS:-30}
+      ACME_POLL_SECONDS: ${ACME_POLL_SECONDS:-180}
+      CERTMGR_CRON_TIME: "${CERTMGR_CRON_TIME:-17 3}"
+      SMTP_ENABLED: ${SMTP_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SENDER: ${SMTP_SENDER:-}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-true}
+      SMTP_NOTIFY_TO: ${SMTP_NOTIFY_TO:-}
+      SMTP_PUBLIC_URL: ${SMTP_PUBLIC_URL:-}
+    volumes:
+      - ./data:/data
+    ports:
+      - "${CERTMGR_BIND:-0.0.0.0}:${CERTMGR_PORT:-8090}:8090"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8090/health', timeout=5)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

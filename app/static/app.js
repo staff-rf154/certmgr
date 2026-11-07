@@ -24,6 +24,9 @@ const renewNoteEl = document.getElementById("renew-note");
 const smtpFormEl = document.getElementById("smtp-form");
 const smtpTestEl = document.getElementById("smtp-test");
 const smtpPasswordStateEl = document.getElementById("smtp-password-state");
+const smtpDialog = document.getElementById("smtp-dialog");
+const smtpOpenEl = document.getElementById("smtp-open");
+const smtpCloseEl = document.getElementById("smtp-close");
 
 let toastTimer = null;
 let smtpInitialized = false;
@@ -239,6 +242,12 @@ async function saveSmtp(showToast = true) {
 }
 
 function render() {
+  if (smtpOpenEl && state.smtp) {
+    smtpOpenEl.textContent = state.smtp.enabled ? "SMTP: вкл" : "SMTP: выкл";
+    smtpOpenEl.title = state.smtp.enabled
+      ? `Уведомления через ${state.smtp.host}:${state.smtp.port}`
+      : "Уведомления отключены";
+  }
   cronEl.textContent = state.cron.enabled
     ? `Cron продления: ежедневно ${state.cron.time}`
     : "Cron продления: не создан";
@@ -369,6 +378,20 @@ formEl.addEventListener("submit", async (event) => {
 certsEl.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");
   if (button) runAction(button);
+});
+
+smtpOpenEl.addEventListener("click", () => {
+  if (state.smtp && !smtpInitialized) {
+    fillSmtpForm(state.smtp);
+    smtpInitialized = true;
+  }
+  smtpDialog.showModal();
+});
+
+smtpCloseEl.addEventListener("click", () => smtpDialog.close());
+
+smtpDialog.addEventListener("click", (event) => {
+  if (event.target === smtpDialog) smtpDialog.close();
 });
 
 smtpFormEl.addEventListener("submit", async (event) => {
